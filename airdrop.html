@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BULK — Airdrop Checker</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:       #0c0c0c;
+      --surface:  #141414;
+      --surface2: #1c1c1c;
+      --border:   #2a2a2a;
+      --border2:  #333;
+      --gold:     #c9a84c;
+      --gold2:    #e8c96b;
+      --gold-dim: rgba(201,168,76,0.15);
+      --red:      #e05252;
+      --text:     #f0ede6;
+      --muted:    #888;
+      --muted2:   #555;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'IBM Plex Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+    }
+
+    /* Subtle grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(201,168,76,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(201,168,76,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Glow top */
+    body::after {
+      content: '';
+      position: fixed;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 400px;
+      background: radial-gradient(ellipse, rgba(201,168,76,0.06) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── HEADER ── */
+    header {
+      width: 100%;
+      max-width: 860px;
+      padding: 32px 24px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      z-index: 1;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+    .logo-star {
+      width: 28px;
+      height: 28px;
+      fill: var(--gold);
+    }
+    .logo-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: 2px;
+    }
+
+    .nav-tag {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border: 1px solid var(--border2);
+      padding: 4px 10px;
+      border-radius: 4px;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      text-align: center;
+      padding: 64px 24px 48px;
+      max-width: 680px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--gold);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      border: 1px solid rgba(201,168,76,0.3);
+      padding: 5px 14px;
+      border-radius: 100px;
+      background: var(--gold-dim);
+      margin-bottom: 28px;
+    }
+    .hero-badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--gold);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(32px, 6vw, 52px);
+      font-weight: 500;
+      line-height: 1.15;
+      color: var(--text);
+      margin-bottom: 16px;
+      letter-spacing: -0.5px;
+    }
+    .hero h1 span {
+      color: var(--gold);
+    }
+
+    .hero p {
+      font-size: 15px;
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* ── MAIN CARD ── */
+    .card {
+      width: 100%;
+      max-width: 560px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 36px;
+      position: relative;
+      z-index: 1;
+      margin-bottom: 24px;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 50%; transform: translateX(-50%);
+      width: 60%; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      opacity: 0.4;
+      border-radius: 1px;
+    }
+
+    /* Tab switcher */
+    .tabs {
+      display: flex;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 28px;
+    }
+    .tab {
+      flex: 1;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--muted);
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab.active {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border2);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .tab:hover:not(.active) {
+      color: var(--text);
+    }
+
+    /* Input section */
+    .input-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .input-wrap {
+      position: relative;
+      margin-bottom: 16px;
+    }
+    .input-wrap input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      padding: 14px 16px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      letter-spacing: 0.3px;
+    }
+    .input-wrap input::placeholder {
+      color: var(--muted2);
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 13px;
+      letter-spacing: 0;
+    }
+    .input-wrap input:focus {
+      border-color: rgba(201,168,76,0.5);
+      box-shadow: 0 0 0 3px rgba(201,168,76,0.08);
+    }
+
+    .btn-check {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, #c9a84c 0%, #a8862e 100%);
+      border: none;
+      border-radius: 10px;
+      color: #0c0c0c;
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-check::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0);
+      transition: background 0.2s;
+    }
+    .btn-check:hover::after { background: rgba(255,255,255,0.08); }
+    .btn-check:active { transform: scale(0.99); }
+    .btn-check:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Result */
+    .result {
+      margin-top: 20px;
+      border-radius: 12px;
+      padding: 20px 20px;
+      display: none;
+      animation: fadeUp 0.3s ease;
+    }
+    .result.show { display: flex; align-items: center; gap: 16px; }
+    .result.not-eligible {
+      background: rgba(224,82,82,0.06);
+      border: 1px solid rgba(224,82,82,0.2);
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 18px;
+    }
+    .not-eligible .result-icon {
+      background: rgba(224,82,82,0.12);
+      border: 1px solid rgba(224,82,82,0.25);
+    }
+
+    .result-text { flex: 1; }
+    .result-title {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .not-eligible .result-title { color: var(--red); }
+
+    .result-sub {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .result-address {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--muted2);
+      margin-top: 4px;
+      word-break: break-all;
+    }
+
+    /* Loading state */
+    .loading-dots {
+      display: none;
+      gap: 4px;
+      align-items: center;
+      justify-content: center;
+    }
+    .loading-dots.show { display: flex; }
+    .loading-dots span {
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: #0c0c0c;
+      animation: dot 1.2s ease-in-out infinite;
+    }
+    .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes dot {
+      0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
+    /* ── FOOTER INFO ── */
+    .info-row {
+      display: flex;
+      gap: 12px;
+      max-width: 560px;
+      width: 100%;
+      padding: 0 0 48px;
+      position: relative;
+      z-index: 1;
+    }
+    .info-chip {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+    }
+    .info-chip .num {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      color: var(--gold);
+      margin-bottom: 4px;
+    }
+    .info-chip .lbl {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 1px;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      width: 100%;
+      padding: 20px 24px;
+      text-align: center;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--muted2);
+      letter-spacing: 1px;
+      position: relative;
+      z-index: 1;
+    }
+    footer a { color: var(--muted); text-decoration: none; }
+    footer a:hover { color: var(--gold); }
+
+    /* Divider */
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border2), transparent);
+      margin: 24px 0 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <span></span>
+    <span class="nav-tag">Airdrop Checker</span>
+  </header>
+
+  <!-- Hero -->
+  <div class="hero">
+
+    <h1>Check Your<br><span>Airdrop</span> Eligibility</h1>
+    <p>Enter your Solana wallet address or Discord username to check if you qualify for the BULK token airdrop.</p>
+  </div>
+
+  <!-- Main card -->
+  <div class="card">
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" id="tabWallet" onclick="switchTab('wallet')">
+        ◎ Solana Wallet
+      </button>
+      <button class="tab" id="tabDiscord" onclick="switchTab('discord')">
+        # Discord
+      </button>
+    </div>
+
+    <!-- Wallet tab -->
+    <div id="panelWallet">
+      <label class="input-label" for="walletInput">Solana Wallet Address</label>
+      <div class="input-wrap">
+        <input
+          id="walletInput"
+          type="text"
+          placeholder="Enter your Solana wallet address..."
+          autocomplete="off"
+          spellcheck="false"
+          onkeydown="if(event.key==='Enter') checkEligibility()"
+        >
+      </div>
+    </div>
+
+    <!-- Discord tab -->
+    <div id="panelDiscord" style="display:none;">
+      <label class="input-label" for="discordInput">Discord Username</label>
+      <div class="input-wrap">
+        <input
+          id="discordInput"
+          type="text"
+          placeholder="Enter your Discord username..."
+          autocomplete="off"
+          spellcheck="false"
+          onkeydown="if(event.key==='Enter') checkEligibility()"
+        >
+      </div>
+    </div>
+
+    <!-- Button -->
+    <button class="btn-check" id="btnCheck" onclick="checkEligibility()">
+      <span id="btnText">Check Eligibility</span>
+      <span class="loading-dots" id="loadingDots">
+        <span></span><span></span><span></span>
+      </span>
+    </button>
+
+    <!-- Result -->
+    <div class="result not-eligible" id="result">
+      <div class="result-icon">✕</div>
+      <div class="result-text">
+        <div class="result-title" id="resultTitle">Not Eligible</div>
+        <div class="result-sub" id="resultSub">This address did not qualify for the BULK airdrop.</div>
+        <div class="result-address" id="resultAddr"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Info chips -->
+  <div class="info-row">
+    <div class="info-chip">
+      <div class="num">S1</div>
+      <div class="lbl">Season</div>
+    </div>
+    <div class="info-chip">
+      <div class="num">Closed</div>
+      <div class="lbl">Snapshot</div>
+    </div>
+    <div class="info-chip">
+      <div class="num">30%</div>
+      <div class="lbl">Distribution</div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <a href="https://bulk.trade" target="_blank">bulk.trade</a>
+    &nbsp;·&nbsp;
+    BULK Airdrop Checker
+    &nbsp;·&nbsp;
+    For informational purposes only
+  </footer>
+
+<script>
+let activeTab = 'wallet';
+
+function switchTab(tab) {
+  activeTab = tab;
+  document.getElementById('tabWallet').classList.toggle('active', tab === 'wallet');
+  document.getElementById('tabDiscord').classList.toggle('active', tab === 'discord');
+  document.getElementById('panelWallet').style.display  = tab === 'wallet'  ? 'block' : 'none';
+  document.getElementById('panelDiscord').style.display = tab === 'discord' ? 'block' : 'none';
+  // Hide result when switching
+  document.getElementById('result').classList.remove('show');
+}
+
+function checkEligibility() {
+  const input = activeTab === 'wallet'
+    ? document.getElementById('walletInput').value.trim()
+    : document.getElementById('discordInput').value.trim();
+
+  if (!input) {
+    const el = activeTab === 'wallet'
+      ? document.getElementById('walletInput')
+      : document.getElementById('discordInput');
+    el.focus();
+    el.style.borderColor = 'rgba(224,82,82,0.5)';
+    setTimeout(() => { el.style.borderColor = ''; }, 1500);
+    return;
+  }
+
+  // Validate Solana address (32-44 base58 chars)
+  if (activeTab === 'wallet') {
+    const base58 = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
+    if (!base58.test(input)) {
+      document.getElementById('resultTitle').textContent = 'Invalid Address';
+      document.getElementById('resultSub').textContent   = 'Please enter a valid Solana wallet address.';
+      document.getElementById('resultAddr').textContent  = '';
+      document.getElementById('result').classList.add('show');
+      return;
+    }
+  }
+
+  // Show loading
+  const btn = document.getElementById('btnCheck');
+  btn.disabled = true;
+  document.getElementById('btnText').style.display   = 'none';
+  document.getElementById('loadingDots').classList.add('show');
+  document.getElementById('result').classList.remove('show');
+
+  // Simulate check delay
+  setTimeout(() => {
+    btn.disabled = false;
+    document.getElementById('btnText').style.display = 'inline';
+    document.getElementById('loadingDots').classList.remove('show');
+
+    // Always not eligible
+    if (activeTab === 'wallet') {
+      const short = input.slice(0, 6) + '...' + input.slice(-4);
+      document.getElementById('resultTitle').textContent = 'Not Eligible';
+      document.getElementById('resultSub').textContent   = 'This wallet did not qualify for the BULK Season 1 airdrop. Stay tuned for future seasons.';
+      document.getElementById('resultAddr').textContent  = input;
+    } else {
+      document.getElementById('resultTitle').textContent = 'Not Eligible';
+      document.getElementById('resultSub').textContent   = 'The Discord account "' + input + '" did not qualify for the BULK Season 1 airdrop.';
+      document.getElementById('resultAddr').textContent  = '';
+    }
+
+    document.getElementById('result').classList.add('show');
+  }, 1800);
+}
+</script>
+</body>
+</html>
