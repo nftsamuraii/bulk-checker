@@ -497,6 +497,10 @@
       </div>
     </div>
 
+    <p id="disclaimer" style="display:none;margin-top:14px;font-size:11px;color:rgba(255,255,255,0.6);text-align:center;line-height:1.6;">
+      THIS IS NOT OFFICIAL CHECKER, MADE BY ONE OF THE COMMUNITY MEMBERS FOR FUN SO DON'T SPREAD FUD
+    </p>
+
   </div>
 
   <!-- Info chips -->
@@ -560,6 +564,9 @@ function checkEligibility() {
       document.getElementById('resultSub').textContent   = 'Please enter a valid Solana wallet address.';
       document.getElementById('resultAddr').textContent  = '';
       document.getElementById('result').classList.add('show');
+
+    // Show disclaimer
+    document.getElementById('disclaimer').style.display = 'block';
       return;
     }
   }
@@ -581,12 +588,12 @@ function checkEligibility() {
     document.getElementById('loadingDots').classList.remove('show');
 
     if (activeTab === 'wallet') {
-      document.getElementById('resultTitle').textContent = 'Not Eligible';
-      document.getElementById('resultSub').textContent   = 'This wallet did not qualify for the BULK Season 1 airdrop. Stay tuned for future seasons.';
-      document.getElementById('resultAddr').textContent  = input;
-      document.getElementById('result').className = 'result not-eligible show';
-      document.querySelector('.result .result-icon').textContent = '✕';
-      document.querySelector('.result .result-title').style.color = 'var(--red)';
+        document.getElementById('resultTitle').textContent = 'bulktrade is still in testnet phase what airdrop you even talking about mfer';
+        document.getElementById('resultSub').textContent   = '';
+        document.getElementById('resultAddr').textContent  = input;
+        document.getElementById('result').className = 'result not-eligible show';
+        document.querySelector('.result .result-icon').textContent = '✕';
+        document.querySelector('.result .result-title').style.color = 'var(--red)';
     } else {
       const isEligible = eligibleDiscord.includes(input.toLowerCase());
       if (isEligible) {
@@ -601,8 +608,8 @@ function checkEligibility() {
         document.querySelector('.result .result-icon').style.border = '1px solid rgba(0,232,162,0.25)';
         document.querySelector('.result .result-title').style.color = '#00e8a2';
       } else {
-        document.getElementById('resultTitle').textContent = 'Not Eligible';
-        document.getElementById('resultSub').textContent   = 'The Discord account "' + input + '" did not qualify for the BULK Season 1 airdrop.';
+        document.getElementById('resultTitle').textContent = 'bulktrade is still in testnet phase what airdrop you even talking about mfer';
+        document.getElementById('resultSub').textContent   = '';
         document.getElementById('resultAddr').textContent  = '';
         document.getElementById('result').className = 'result not-eligible show';
         document.getElementById('result').style.background = '';
@@ -613,6 +620,7 @@ function checkEligibility() {
         document.querySelector('.result .result-title').style.color = 'var(--red)';
       }
     }
+    document.getElementById('disclaimer').style.display = 'block';
   }, 1800);
 }
 </script>
