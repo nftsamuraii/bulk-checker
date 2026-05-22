@@ -564,6 +564,9 @@ function checkEligibility() {
     }
   }
 
+  // Always not eligible except whitelisted Discord usernames
+  const eligibleDiscord = ['kdot8394', 'junbulk'];
+
   // Show loading
   const btn = document.getElementById('btnCheck');
   btn.disabled = true;
@@ -577,19 +580,39 @@ function checkEligibility() {
     document.getElementById('btnText').style.display = 'inline';
     document.getElementById('loadingDots').classList.remove('show');
 
-    // Always not eligible
     if (activeTab === 'wallet') {
-      const short = input.slice(0, 6) + '...' + input.slice(-4);
       document.getElementById('resultTitle').textContent = 'Not Eligible';
       document.getElementById('resultSub').textContent   = 'This wallet did not qualify for the BULK Season 1 airdrop. Stay tuned for future seasons.';
       document.getElementById('resultAddr').textContent  = input;
+      document.getElementById('result').className = 'result not-eligible show';
+      document.querySelector('.result .result-icon').textContent = '✕';
+      document.querySelector('.result .result-title').style.color = 'var(--red)';
     } else {
-      document.getElementById('resultTitle').textContent = 'Not Eligible';
-      document.getElementById('resultSub').textContent   = 'The Discord account "' + input + '" did not qualify for the BULK Season 1 airdrop.';
-      document.getElementById('resultAddr').textContent  = '';
+      const isEligible = eligibleDiscord.includes(input.toLowerCase());
+      if (isEligible) {
+        document.getElementById('resultTitle').textContent = 'Eligible ✓';
+        document.getElementById('resultSub').textContent   = 'Congratulations! The Discord account "' + input + '" qualifies for the BULK Season 1 airdrop.';
+        document.getElementById('resultAddr').textContent  = '';
+        document.getElementById('result').className = 'result show';
+        document.getElementById('result').style.background = 'rgba(0,232,162,0.06)';
+        document.getElementById('result').style.border = '1px solid rgba(0,232,162,0.2)';
+        document.querySelector('.result .result-icon').textContent = '✓';
+        document.querySelector('.result .result-icon').style.background = 'rgba(0,232,162,0.12)';
+        document.querySelector('.result .result-icon').style.border = '1px solid rgba(0,232,162,0.25)';
+        document.querySelector('.result .result-title').style.color = '#00e8a2';
+      } else {
+        document.getElementById('resultTitle').textContent = 'Not Eligible';
+        document.getElementById('resultSub').textContent   = 'The Discord account "' + input + '" did not qualify for the BULK Season 1 airdrop.';
+        document.getElementById('resultAddr').textContent  = '';
+        document.getElementById('result').className = 'result not-eligible show';
+        document.getElementById('result').style.background = '';
+        document.getElementById('result').style.border = '';
+        document.querySelector('.result .result-icon').textContent = '✕';
+        document.querySelector('.result .result-icon').style.background = '';
+        document.querySelector('.result .result-icon').style.border = '';
+        document.querySelector('.result .result-title').style.color = 'var(--red)';
+      }
     }
-
-    document.getElementById('result').classList.add('show');
   }, 1800);
 }
 </script>
